@@ -131,7 +131,7 @@ object Expressions {
       if (editLine.contains("=")){
         splitLine = editLine.split("=").toList
         variable = splitLine.head
-        expression = splitLine(1)
+        expression = "(" + splitLine(1) + ")"
         //Add a variable and the expression to the variable map
         if (!variableMap.contains(variable)){
           variableMap = variableMap + (variable -> expression)
@@ -141,14 +141,15 @@ object Expressions {
         while (index < expression.length){
           val character = expression(index).toString
           if (variableMap.contains(character)){
-            expression = expression.replaceAll(character, variableMap(character))
+            expression = expression.replaceAll(character, "(" + variableMap(character) + ")")
             //Updates the replaced expression
             variableMap = variableMap + (variable -> expression)
             index = 0
           }
           else {
             //If there are no variables in expression just update variable
-            variableMap = variableMap + (variable -> expression)
+            val string = "(" + expression + ")"
+            variableMap = variableMap + (variable -> string)
           }
           index += 1
         }
@@ -160,7 +161,7 @@ object Expressions {
         while (index < finalString.length){
           val character = finalString(index).toString
           if (variableMap.contains(character)){
-            finalString = finalString.replaceAll(character, variableMap(character))
+            finalString = finalString.replaceAll(character, "(" + variableMap(character) + ")")
             index = 0
           }
           else {
