@@ -1,4 +1,5 @@
 x = true
 y = x || false
 y = false
-y && x
+z = true
+(z || y) && x

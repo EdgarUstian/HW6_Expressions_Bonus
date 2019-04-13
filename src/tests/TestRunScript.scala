@@ -50,12 +50,10 @@ class TestRunScript extends FunSuite {
     List("->", "<>")   // lowest precedence
   )
 
-  test("Test Arithmetic Expression"){
-
-    assert(runScript[Double]("data/aritScript.txt", (s: String) => s.toDouble, operatorTable, operationOrder) == 37.0)
-
-
-
-    assert(!runScript[Boolean]("data/boolScript.txt", (s: String) => s.toBoolean, booleanTable, booleanOrder))
+  test("Test Arithmetic Script"){
+    assert(runScript[Double]("data/aritScript.txt", (s: String) => s.toDouble, operatorTable, operationOrder) == 6.0)
+  }
+  test("Test Boolean Script"){
+    assert(runScript[Boolean]("data/boolScript.txt", (s: String) => s.toBoolean, booleanTable, booleanOrder))
   }
 }
