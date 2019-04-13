@@ -1,6 +1,5 @@
 package expressions
 
-import scala.io.{BufferedSource, Source}
 import datastructures.Stack
 
 object Expressions {
@@ -118,68 +117,58 @@ object Expressions {
     converter(nextList.head)
   }
 
-  def evaluateArithmetic(expression: String): Double = {
-    //Operator Functions
-    val pow: (Double, Double) => Double = (a: Double, b: Double) => Math.pow(a, b)
-    val mul: (Double, Double) => Double = (a: Double, b: Double) => a * b
-    val div: (Double, Double) => Double = (a: Double, b: Double) => a / b
-    val add: (Double, Double) => Double = (a: Double, b: Double) => a + b
-    val sub: (Double, Double) => Double = (a: Double, b: Double) => a - b
-
-    //Operator Table
-    val operatorTable: Map[String, (Double, Double) => Double] = Map(
-      "^" -> pow,
-      "*" -> mul,
-      "/" -> div,
-      "+" -> add,
-      "-" -> sub
-    )
-
-    //Operation Order
-    val operationOrder = List(
-      List("^"),       // highest precedence
-      List("*", "/"),  // medium precedence
-      List("+", "-")   // lowest precedence
-    )
-
-    evaluate[Double](expression, (s: String) => s.toDouble, operatorTable, operationOrder)
-  }
-
-  def evaluateBoolean(expression: String): Boolean = {
-    //Boolean Functions
-    val and: (Boolean, Boolean) => Boolean = (a: Boolean, b: Boolean) => a && b
-    val or: (Boolean, Boolean) => Boolean = (a: Boolean, b: Boolean) => a || b
-    val xor: (Boolean, Boolean) => Boolean = (a: Boolean, b: Boolean) => (a || b) && !(a && b)
-    val implies: (Boolean, Boolean) => Boolean = (a: Boolean, b: Boolean) => !(a && !b)
-    val iff: (Boolean, Boolean) => Boolean = (a: Boolean, b: Boolean) => (a && b) || (!a && !b)
-
-    //Boolean Table
-    val booleanTable: Map[String, (Boolean, Boolean) => Boolean] = Map(
-      "&&" -> and,
-      "||" -> or,
-      "xor" -> xor,
-      "->" -> implies,
-      "<>" -> iff
-    )
-
-    //Boolean Order
-    val booleanOrder = List(
-      List("&&"),       // highest precedence
-      List("||", "xor"),  // medium precedence
-      List("->", "<>")   // lowest precedence
-    )
-
-    evaluate[Boolean](expression, (s: String) => s.toBoolean, booleanTable, booleanOrder)
-  }
-
   def runScript[A](filename: String, converter: String => A, operators: Map[String,(A,A) => A], order: List[List[String]]): A = {
     var variableMap: Map[String, String] = Map()
+    var splitLine: List[String] = List()
+    var variable: String = ""
+    var expression: String = ""
+    var finalString: String = ""
     val scriptFile = scala.io.Source.fromFile(filename)
     for (line <- scriptFile.getLines()){
-      if (!"=".contains(line)){
-        var newLine = line.split("=").toList
-        
+      //Get rid of all whitespaces
+      val editLine = line.replaceAll("\\s", "")
+      //If lines has "=" in it split it into left and right side
+      if (editLine.contains("=")){
+        splitLine = editLine.split("=").toList
+        variable = splitLine.head
+        expression = splitLine(1)
+        //Add a variable and the expression to the variable map
+        if (!variableMap.contains(variable)){
+          variableMap = variableMap + (variable -> expression)
+        }
+        //Replace the variables in expression with their original expression if already in variable map
+        var index = 0
+        while (index < expression.length){
+          val character = expression(index).toString
+          if (variableMap.contains(character)){
+            expression = expression.replaceAll(character, variableMap(character))
+            //Updates the replaced expression
+            variableMap = variableMap + (variable -> expression)
+            index = 0
+          }
+          else {
+            //If there are no variables in expression just update variable
+            variableMap = variableMap + (variable -> expression)
+          }
+          index += 1
+        }
+      }
+      else {
+        finalString = editLine
+        //Replace all the final variables
+        var index = 0
+        while (index < finalString.length){
+          val character = finalString(index).toString
+          if (variableMap.contains(character)){
+            finalString = finalString.replaceAll(character, variableMap(character))
+            index = 0
+          }
+          else {
+            index += 1
+          }
+        }
       }
     }
+    evaluate[A]("(" + finalString + ")", converter, operators, order)
   }
 }

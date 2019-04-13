@@ -1,0 +1,4 @@
+x = true
+y = x || false
+y = false
+y && x
